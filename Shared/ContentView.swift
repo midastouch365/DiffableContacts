@@ -12,10 +12,12 @@ enum SectionType  {
 }
 
 class Contact: NSObject {
+//    var image: UIImage?
     let name: String
     var isFavorite = false
     
     init(name: String) {
+//        self.image = image
         self.name = name
     }
 }
@@ -43,6 +45,7 @@ class DiffableTableViewController: UITableViewController {
     lazy var source: ContactSource = .init(tableView: self.tableView) { (_, indexPath, contact) -> UITableViewCell? in
         
         let cell = ContactCell(style: .default, reuseIdentifier: nil)
+//        cell.viewModel.image = contact.image
         cell.viewModel.name = contact.name
         cell.viewModel.isFavorite = contact.isFavorite
         
@@ -83,6 +86,7 @@ class DiffableTableViewController: UITableViewController {
     private func setupSource() {
         var snapshot = source.snapshot()
         snapshot.appendSections([.ceo, .employees])
+        
         snapshot.appendItems([
             .init(name: "Elon Musk"),
             .init(name: "Tim Cook"),
@@ -117,7 +121,7 @@ class DiffableTableViewController: UITableViewController {
     }
     
     @objc private func handleAdd() {
-        let formView = ContactFormView { (name, sectionType) in
+        let formView = ContactFormView { (image, name, sectionType) in
             self.dismiss(animated: true)
             
             var snapshot = self.source.snapshot()
@@ -132,28 +136,52 @@ class DiffableTableViewController: UITableViewController {
 
 struct ContactFormView: View {
     
-    var didAddContact: (String, SectionType) -> () = { _,_  in }
-    
+    var didAddContact: (UIImage, String, SectionType) -> () = { _,_,_   in }
+        
+    @State private var image: UIImage?
+
     @State private var name = ""
     
     @State private var sectionType = SectionType.ceo
+        
+    @State private var showImagePicker = false
     
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 10) {
             Button {
-                // Image functionality
+                showImagePicker.toggle()
             } label: {
-                Image(systemName: "person.fill")
-                    .font(.system(size: 65))
-                    .scaledToFit()
-                    .cornerRadius(5)
-                    .frame(width: 100, height: 100, alignment: .center)
-                    .clipShape(Circle())
-                    .overlay(Circle().stroke(Color.blue, lineWidth: 3))
+                if let image = self.image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .cornerRadius(5)
+                        .frame(width: 100, height: 100, alignment: .center)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.blue, lineWidth: 3))
+                } else {
+                    Image(systemName: "person.fill")
+                        .font(.system(size: 65))
+                        .scaledToFill()
+                        .cornerRadius(5)
+                        .frame(width: 100, height: 100, alignment: .center)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.blue, lineWidth: 3))
+                }
             }
-            .padding(20)
+            .padding(15)
+            
+            .sheet(isPresented: $showImagePicker, onDismiss: nil) {
+                // Pick an image from the photo library:
+                ImagePicker(sourceType: .photoLibrary, selectedImage: self.$image)
+
+                //  If you wish to take a photo from camera instead:
+                // ImagePicker(sourceType: .camera, selectedImage: self.$image)
+            }
             
             TextField("Name", text: $name)
+            
+            Divider()
             
             Picker(selection: $sectionType, label: Text("DOESN'T MATTER")) {
                 Text("CEO").tag(SectionType.ceo)
@@ -163,7 +191,7 @@ struct ContactFormView: View {
             
             Button(action: {
                 // run a function/closure somehow
-                self.didAddContact(self.name, self.sectionType)
+                self.didAddContact(self.image!, self.name, self.sectionType)
             }, label: {
                 HStack {
                     Spacer()
@@ -200,7 +228,7 @@ class ContactCell: UITableViewCell {
         hostingController.view.leadingAnchor.constraint(equalTo: self.leadingAnchor).isActive = true
         hostingController.view.trailingAnchor.constraint(equalTo: self.trailingAnchor).isActive = true
         
-        viewModel.name = "SOMETHING COMPLETELY NEW"
+//        viewModel.name = "SOMETHING COMPLETELY NEW"
     }
     
     required init?(coder: NSCoder) {

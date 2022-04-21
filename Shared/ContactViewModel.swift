@@ -6,8 +6,10 @@
 //
 
 import Foundation
+import SwiftUI
 
 class ContactViewModel: ObservableObject {
+    @Published var image: UIImage?
     @Published var name = " "
     @Published var isFavorite = false
 }
