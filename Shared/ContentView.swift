@@ -7,17 +7,15 @@
 
 import SwiftUI
 
-enum SectionType  {
+enum SectionType {
     case ceo, employees
 }
 
 class Contact: NSObject {
-//    var image: UIImage?
     let name: String
     var isFavorite = false
     
     init(name: String) {
-//        self.image = image
         self.name = name
     }
 }
@@ -45,7 +43,6 @@ class DiffableTableViewController: UITableViewController {
     lazy var source: ContactSource = .init(tableView: self.tableView) { (_, indexPath, contact) -> UITableViewCell? in
         
         let cell = ContactCell(style: .default, reuseIdentifier: nil)
-//        cell.viewModel.image = contact.image
         cell.viewModel.name = contact.name
         cell.viewModel.isFavorite = contact.isFavorite
         
